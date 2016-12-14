@@ -100,11 +100,11 @@ object TicTacToe extends PApplet  {
   
   override def keyPressed() { 
     if (key == ' ') isGameOn = true // spacella peli alkaa
-    else if (isGameOn == true) { // tää ei vielä toimi, yritin saada kuvat katoamaan näppäimillä (jos ne on laitettu siihen mouseclickdillä)
+    else if (isGameOn == true) { // Kuva katoaa näppäimellä, jos se kuva on laitettu siihen klikkaamalla (mouseclicked)
       if (key == 'q' | key == 'Q') {
-        grid(0)(0) == ""
-        redrawImages(grid, deadline, oPlayer, deadline, xPlayer, boxSize, this)
+        grid(0)(0) = ""
       }
+      redrawImages(grid, deadline, oPlayer, deadline, xPlayer, boxSize, this)
     } 
   }
   
