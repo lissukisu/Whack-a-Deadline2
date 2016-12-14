@@ -11,15 +11,15 @@ object TicTacToe extends PApplet  {
   val boxSize: Int = 120
   val boxAmount: Int = 3
   val gameSize: Int = boxAmount * boxSize
-  private var canStartNewGameTime: Option[Deadline] = None
+  private var canStartNewGameTime: Option[Deadline] = None // älkää välittäkö, liittyy aikaan
   
   val zero = loadImage("O.png")  
   val cross = loadImage("X.png")
-  var back = loadImage("Grass.jpg")
-  back.resize(gameSize,gameSize)
-  var button = loadImage("start.png")
+  var back = loadImage("Grass.jpg") //taustakuva
+  back.resize(gameSize,gameSize) //taustakuva oikeaan kokoon
+  var button = loadImage("start.png") // aoitusnappula XD
   button.resize(100,60)
-  var deadline = loadImage("Deadline.jpg")
+  var deadline = loadImage("Deadline.jpg") // deadline-kuva
   
   
   val oPlayer: String = "O"
@@ -55,11 +55,11 @@ object TicTacToe extends PApplet  {
 
   override def draw() : Unit = {
     if (isGameOn) {
-      image(back,0,0)
+      image(back,0,0) // taustakuvan asettaminen
       stroke(0)
       drawGrid(this, boxAmount, boxSize)
       redrawImages(grid, deadline, oPlayer, deadline, xPlayer, boxSize, this)
-    } else if (begin) {
+    } else if (begin) { // jäätävä aloitusnäkymä
       image(back,0,0)
       text("Welcome to play Whack-a-Deadline!",50,50)
       image(button,130,150)
@@ -98,9 +98,9 @@ object TicTacToe extends PApplet  {
  
 
   
-  override def keyPressed() {
-    if (key == ' ') isGameOn = true
-    else if (isGameOn == true) {
+  override def keyPressed() { 
+    if (key == ' ') isGameOn = true // spacella peli alkaa
+    else if (isGameOn == true) { // tää ei vielä toimi, yritin saada kuvat katoamaan näppäimillä (jos ne on laitettu siihen mouseclickdillä)
       if (key == 'q' | key == 'Q') {
         grid(0)(0) == ""
         redrawImages(grid, deadline, oPlayer, deadline, xPlayer, boxSize, this)
