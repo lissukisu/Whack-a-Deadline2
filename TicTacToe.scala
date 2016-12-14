@@ -98,16 +98,21 @@ object TicTacToe extends PApplet  {
  
 
   
-  override def keyPressed() { 
-    if (key == ' ') isGameOn = true // spacella peli alkaa
-    else if (isGameOn == true) { // Kuva katoaa näppäimellä, jos se kuva on laitettu siihen klikkaamalla (mouseclicked)
-      if (key == 'q' | key == 'Q') {
-        grid(0)(0) = ""
-      }
+  override def keyPressed() { // Tyhjentää ruudun, jos siinä on deadline
+    if (key == ' ') isGameOn = true
+    else if (isGameOn) {
+      if (key == 'q' | key == 'Q') grid(0)(0) = ""
+      else if (key == 'w' | key == 'W') grid(1)(0) = ""
+      else if (key == 'e' | key == 'E') grid(2)(0) = ""
+      else if (key == 'a' | key == 'A') grid(0)(1) = ""
+      else if (key == 's' | key == 'S') grid(1)(1) = ""
+      else if (key == 'd' | key == 'D') grid(2)(1) = ""
+      else if (key == 'z' | key == 'Z') grid(0)(2) = ""
+      else if (key == 'x' | key == 'X') grid(1)(2) = ""
+      else if (key == 'c' | key == 'C') grid(2)(2) = ""
       redrawImages(grid, deadline, oPlayer, deadline, xPlayer, boxSize, this)
     } 
   }
-  
   
 
   /**
