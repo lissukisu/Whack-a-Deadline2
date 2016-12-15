@@ -24,6 +24,7 @@ object WhackADeadline extends PApplet  {
   private var begin: Boolean = true
   private var help: Boolean = false
   private var gameOver: Boolean = false
+  private var nextLevel: Boolean = false
   private var congrats: Boolean = false
   
   private var grid = Array.fill(boxAmount, boxAmount)(false)
@@ -33,18 +34,25 @@ object WhackADeadline extends PApplet  {
   
   def lose() = {
     if (missed >= 3) {
+      deadlineHits = 0
+      missed = 0
+      timeLimit = 3
       isGameOn = false
       gameOver = true 
     }
   }
   
   def win() = {
-    if (deadlineHits >= 10) {
+    if (deadlineHits >= 4) {
       timeLimit -= 1
       missed = 0
       deadlineHits = 0
       isGameOn = false
-      congrats = true
+      if (timeLimit > 0) nextLevel = true
+      else {
+        timeLimit = 3
+        congrats = true
+      }
     }
   }
  
@@ -101,9 +109,12 @@ object WhackADeadline extends PApplet  {
     } else if (gameOver) { // tähän pitäis tehdä häviön/voiton/tasojen välissä ilmestyvät näkymät
         image(back,0,0)
         text("YOU LOSE :(",40,100)
+    } else if (nextLevel) {
+        image(back,0,0)
+        text("You passed this level!\nIn the next level\nyou have " + timeLimit + " seconds for each deadline.",40,100)
     } else if (congrats) {
         image(back,0,0)
-        text("YOU WIN :)" + timeLimit,40,100)
+        text("YOU WIN :)",40,100)
     }
   }
 
@@ -114,19 +125,23 @@ object WhackADeadline extends PApplet  {
     if (key == ' ') {
       begin = false
       congrats = false
+      nextLevel = false
+      gameOver = false
       isGameOn = true
     }
     else if (isGameOn) {
-      val x = pairs(key.toLower)._1
-      val y = pairs(key.toLower)._2
-      if (grid(x)(y)) {
-        grid(x)(y) = false
-        onJoDeadline = false
-        deadlineHits += 1
-        println(deadlineHits)
-      } else {
-        missed += 1
-        println(missed)
+      if (pairs.contains(key)) {
+        val x = pairs(key.toLower)._1
+        val y = pairs(key.toLower)._2
+        if (grid(x)(y)) {
+          grid(x)(y) = false
+          onJoDeadline = false
+          deadlineHits += 1
+          println(deadlineHits)
+        } else {
+          missed += 1
+          println(missed)
+        }
       }
     }
     else if (key == 'h' | key == 'H') help = !help
