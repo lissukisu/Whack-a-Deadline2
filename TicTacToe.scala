@@ -22,26 +22,35 @@ object WhackADeadline extends PApplet  {
 
   private var isGameOn: Boolean = false
   private var begin: Boolean = true
-  private var help = false
-  private var ending = false
+  private var help: Boolean = false
+  private var gameOver: Boolean = false
+  private var congrats: Boolean = false
   
   private var grid = Array.fill(boxAmount, boxAmount)(false)
   
   private var deadlineHits = 0 // tein nää jo valmiiks, ei tee vielä mitään
   private var missed = 0
   
-  if (missed > 3) {
-    isGameOn = false
-    ending = true
+  def lose() = {
+    if (missed >= 3) {
+      isGameOn = false
+      gameOver = true 
+    }
   }
   
+  def win() = {
+    if (deadlineHits >= 10) {
+      isGameOn = false
+      congrats = true
+    }
+  }
  
   override def setup() : Unit = { 
     size(gameSize, gameSize) 
   }
-  /*
+ 
   def deadlineAppear: Boolean = {
-    if (time.isEmpty) false
+    if (showNewDeadline) false
     else if (time.get.timeLeft <= 0.seconds) false
     else {
       grid(0)(0) = true
@@ -49,7 +58,11 @@ object WhackADeadline extends PApplet  {
     }
   }
  
-  */
+  
+  
+  def showNewDeadline = {
+    (this.time == None || this.time.get.timeLeft < 0.seconds )
+  }
   
   
   var onJoDeadline = {
@@ -83,8 +96,12 @@ object WhackADeadline extends PApplet  {
       text("Welcome to play\nWhack-a-Deadline!",40,100)
     } else if (help) {
       ???
-    } else if (ending) { // tähän pitäis tehdä häviön/voiton/tasojen välissä ilmestyvät näkymät
+    } else if (gameOver) { // tähän pitäis tehdä häviön/voiton/tasojen välissä ilmestyvät näkymät
         image(back,0,0)
+        text("YOU LOSE :(",40,100)
+    } else if (congrats) {
+        image(back,0,0)
+        text("YOU WIN :)",40,100)
     }
   }
 
@@ -100,15 +117,7 @@ object WhackADeadline extends PApplet  {
       val x = pairs(key.toLower)._1
       val y = pairs(key.toLower)._2
       if (grid(x)(y)) {
-        if (key == 'q' | key == 'Q') grid(0)(0) = false
-        else if (key == 'w' | key == 'W') grid(1)(0) = false
-        else if (key == 'e' | key == 'E') grid(2)(0) = false
-        else if (key == 'a' | key == 'A') grid(0)(1) = false
-        else if (key == 's' | key == 'S') grid(1)(1) = false
-        else if (key == 'd' | key == 'D') grid(2)(1) = false
-        else if (key == 'z' | key == 'Z') grid(0)(2) = false
-        else if (key == 'x' | key == 'X') grid(1)(2) = false
-        else if (key == 'c' | key == 'C') grid(2)(2) = false  
+        grid(x)(y) = false
         onJoDeadline = false
         deadlineHits += 1
         println(deadlineHits)
@@ -118,6 +127,8 @@ object WhackADeadline extends PApplet  {
       }
     }
     else if (key == 'h' | key == 'H') help = !help
+    this.lose()
+    this.win()
   }
   
   private var pairs = {
