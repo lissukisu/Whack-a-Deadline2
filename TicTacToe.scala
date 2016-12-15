@@ -49,19 +49,20 @@ object WhackADeadline extends PApplet  {
     size(gameSize, gameSize) 
   }
  
+  /*
   def deadlineAppear: Boolean = {
-    if (showNewDeadline) false
+    if (showDeadline) false
     else if (time.get.timeLeft <= 0.seconds) false
     else {
       grid(0)(0) = true
       true
     }
   }
- 
+ */
   
   
-  def showNewDeadline = {
-    (this.time == None || this.time.get.timeLeft < 0.seconds )
+  def showDeadline = {
+    !(this.time == None || this.time.get.timeLeft <= 0.seconds)
   }
   
   
@@ -74,6 +75,7 @@ object WhackADeadline extends PApplet  {
      val y = random.nextInt(boxAmount)
      grid(x)(y) = true
      onJoDeadline = true
+     time = Some(3.seconds.fromNow)
   }
   
 
@@ -81,12 +83,19 @@ object WhackADeadline extends PApplet  {
   override def draw() : Unit = {
     if (isGameOn) { // pelinäkymä
       image(back,0,0)
-      //time = Some(1.seconds.fromNow)
       if (!onJoDeadline) newDeadline()
-      for (i <- grid.indices; j <- grid.indices) {
-       if (grid(i)(j)) {
-        image(deadline, i*boxSize, j*boxSize)
-       }
+      if (showDeadline) {
+        for (i <- grid.indices; j <- grid.indices) {
+         if (grid(i)(j)) {
+          image(deadline, i*boxSize, j*boxSize)
+         }
+        }
+      } else if (!showDeadline) {
+        grid = Array.fill(boxAmount, boxAmount)(false)
+        onJoDeadline = false
+        missed += 1
+        println(missed)
+        lose()
       }
     } else if (begin) { // aloitusnäkymä
       image(back,0,0)
