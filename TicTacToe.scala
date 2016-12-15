@@ -8,7 +8,7 @@ object WhackADeadline extends PApplet  {
   val boxAmount: Int = 3
   val gameSize: Int = boxAmount * boxSize
   private var time: Option[Deadline] = None //Some(1.seconds.fromNow) // älkää välittäkö tästä
-  val duration = Duration(1,SECONDS)
+  var timeLimit: Int = 3
   
   val random = new Random
   
@@ -40,6 +40,9 @@ object WhackADeadline extends PApplet  {
   
   def win() = {
     if (deadlineHits >= 10) {
+      timeLimit -= 1
+      missed = 0
+      deadlineHits = 0
       isGameOn = false
       congrats = true
     }
@@ -49,17 +52,7 @@ object WhackADeadline extends PApplet  {
     size(gameSize, gameSize) 
   }
  
-  /*
-  def deadlineAppear: Boolean = {
-    if (showDeadline) false
-    else if (time.get.timeLeft <= 0.seconds) false
-    else {
-      grid(0)(0) = true
-      true
-    }
-  }
- */
-  
+
   
   def showDeadline = {
     !(this.time == None || this.time.get.timeLeft <= 0.seconds)
@@ -75,7 +68,7 @@ object WhackADeadline extends PApplet  {
      val y = random.nextInt(boxAmount)
      grid(x)(y) = true
      onJoDeadline = true
-     time = Some(3.seconds.fromNow)
+     time = Some(timeLimit.seconds.fromNow)
   }
   
 
@@ -110,7 +103,7 @@ object WhackADeadline extends PApplet  {
         text("YOU LOSE :(",40,100)
     } else if (congrats) {
         image(back,0,0)
-        text("YOU WIN :)",40,100)
+        text("YOU WIN :)" + timeLimit,40,100)
     }
   }
 
@@ -119,8 +112,9 @@ object WhackADeadline extends PApplet  {
   // Poistaa deadlinet näkyvistä oikeilla näppäimillä
   override def keyPressed() {
     if (key == ' ') {
-      isGameOn = true
       begin = false
+      congrats = false
+      isGameOn = true
     }
     else if (isGameOn) {
       val x = pairs(key.toLower)._1
