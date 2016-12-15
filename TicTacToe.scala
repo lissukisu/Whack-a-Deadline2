@@ -18,6 +18,8 @@ object WhackADeadline extends PApplet  {
   back.resize(gameSize,gameSize)
   var deadline = loadImage("icon.png")
   deadline.resize(boxSize,boxSize)
+  var matti = loadImage("matti.png")
+  matti.resize(70,70)
   
 
   private var isGameOn: Boolean = false
@@ -57,7 +59,7 @@ object WhackADeadline extends PApplet  {
   }
  
   override def setup() : Unit = { 
-    size(gameSize, gameSize) 
+    size(gameSize, gameSize + 90) 
   }
  
 
@@ -82,6 +84,7 @@ object WhackADeadline extends PApplet  {
 
   
   override def draw() : Unit = {
+    image(matti,10,430)
     if (isGameOn) { // pelinäkymä
       image(back,0,0)
       if (!onJoDeadline) newDeadline()
