@@ -23,11 +23,17 @@ object WhackADeadline extends PApplet  {
   private var isGameOn: Boolean = false
   private var begin: Boolean = true
   private var help = false
+  private var ending = false
   
   private var grid = Array.fill(boxAmount, boxAmount)(false)
   
   private var deadlineHits = 0 // tein nää jo valmiiks, ei tee vielä mitään
   private var missed = 0
+  
+  if (missed > 3) {
+    isGameOn = false
+    ending = true
+  }
   
  
   override def setup() : Unit = { 
@@ -77,7 +83,7 @@ object WhackADeadline extends PApplet  {
       text("Welcome to play\nWhack-a-Deadline!",40,100)
     } else if (help) {
       ???
-    } else { // tähän pitäis tehdä häviön/voiton/tasojen välissä ilmestyvät näkymät
+    } else if (ending) { // tähän pitäis tehdä häviön/voiton/tasojen välissä ilmestyvät näkymät
         image(back,0,0)
     }
   }
@@ -91,19 +97,39 @@ object WhackADeadline extends PApplet  {
       begin = false
     }
     else if (isGameOn) {
-      onJoDeadline = false
-      if (key == 'q' | key == 'Q') grid(0)(0) = false
-      else if (key == 'w' | key == 'W') grid(1)(0) = false
-      else if (key == 'e' | key == 'E') grid(2)(0) = false
-      else if (key == 'a' | key == 'A') grid(0)(1) = false
-      else if (key == 's' | key == 'S') grid(1)(1) = false
-      else if (key == 'd' | key == 'D') grid(2)(1) = false
-      else if (key == 'z' | key == 'Z') grid(0)(2) = false
-      else if (key == 'x' | key == 'X') grid(1)(2) = false
-      else if (key == 'c' | key == 'C') grid(2)(2) = false  
-      
+      val x = pairs(key.toLower)._1
+      val y = pairs(key.toLower)._2
+      if (grid(x)(y)) {
+        if (key == 'q' | key == 'Q') grid(0)(0) = false
+        else if (key == 'w' | key == 'W') grid(1)(0) = false
+        else if (key == 'e' | key == 'E') grid(2)(0) = false
+        else if (key == 'a' | key == 'A') grid(0)(1) = false
+        else if (key == 's' | key == 'S') grid(1)(1) = false
+        else if (key == 'd' | key == 'D') grid(2)(1) = false
+        else if (key == 'z' | key == 'Z') grid(0)(2) = false
+        else if (key == 'x' | key == 'X') grid(1)(2) = false
+        else if (key == 'c' | key == 'C') grid(2)(2) = false  
+        onJoDeadline = false
+        deadlineHits += 1
+        println(deadlineHits)
+      } else {
+        missed += 1
+        println(missed)
+      }
     }
     else if (key == 'h' | key == 'H') help = !help
+  }
+  
+  private var pairs = {
+    Map('q' -> (0,0),
+        'w' -> (1,0),
+        'e' -> (2,0),
+        'a' -> (0,1),
+        's' -> (1,1),
+        'd' -> (2,1),
+        'z' -> (0,2),
+        'x' -> (1,2),
+        'c' -> (2,2))
   }
   
   
