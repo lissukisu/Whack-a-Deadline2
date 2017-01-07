@@ -144,6 +144,7 @@ object WhackADeadline extends PApplet  {
       congrats = false
       nextLevel = false
       gameOver = false
+      help = false
       isGameOn = true
     }
     else if (isGameOn) {
