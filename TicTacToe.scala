@@ -20,6 +20,9 @@ object WhackADeadline extends PApplet  {
   deadline.resize(boxSize,boxSize)
   var matti = loadImage("matti.png")
   matti.resize(170,170)
+  var keyboard = loadImage("keyboard.png")
+  keyboard.resize(160,160)
+
   
 
   private var isGameOn: Boolean = false
@@ -45,7 +48,7 @@ object WhackADeadline extends PApplet  {
   }
   
   def win() = {
-    if (deadlineHits >= 10) {
+    if (deadlineHits >= 15) {
       timeLimit -= 1
       missed = 0
       deadlineHits = 0
@@ -82,18 +85,18 @@ object WhackADeadline extends PApplet  {
 
   
   override def draw() : Unit = {
-    val myFont = createFont("GillSans-UltraBold", 28)
+    val myFont = createFont("GillSans-UltraBold", 24)
     textFont(myFont)
     fill(0)
     image(back,0,0)
     if (isGameOn) { // pelinäkymä
       if (!onJoDeadline) newDeadline()
       if (showDeadline) {
+        text("Missed: " + missed, 20,460)
+        text("Hits: " + deadlineHits + "/15", 210,460)
         for (i <- grid.indices; j <- grid.indices) {
          if (grid(i)(j)) {
           image(deadline, i*boxSize, j*boxSize)
-          text("Missed: " + missed, 20,460)
-          text("Hits: " + deadlineHits + "/15", 210,460)
          }
         }
       } else if (!showDeadline) {
@@ -105,14 +108,26 @@ object WhackADeadline extends PApplet  {
       }
     } else if (help) {
       text("HELP",40,100)
+      val newFont = createFont("GillSans-UltraBold", 16)
+      textFont(newFont)
+      fill(0)
+      text("There are 3 levels in the game:\n\nIn each level, you have less and less\n time to hit the deadlines before\n they disappear.\n\nYou can only miss three deadlines\nin each level.\n\nTo hit the\ndeadlines, use\nthese keys:\n\n\n\nPress H to go back to the menu.",40,150)
+      image(keyboard,220,330)
+
     } else if (begin) { // aloitusnäkymä
        text("Welcome to play\nWhack-a-Deadline!",40,100)
+       text("Press SPACE to start\n  a new game\nPress H for help",40, 400)
+       image(deadline,boxSize,boxSize + 40)
     } else if (gameOver) {
-        text("YOU LOSE :(",40,100)
+        text("YOU LOSE :(\nPress SPACE to\nstart a new game.",40,100)
         text("Missed: 3", 20,460)
         image(matti,120,200)
     } else if (nextLevel) {
-        text("You passed this level!\nIn the next level\nyou have " + timeLimit + " seconds for each deadline.",40,100)
+        var timeLeft = {
+         if (timeLimit > 1) timeLimit + " seconds"
+         else timeLimit + " second"
+        } 
+        text("You passed this level!\nIn the next level\nyou have " + timeLeft + "\nfor each deadline.\n\nPress space to continue.",40,100)
         text("Hits: 15/15", 210,460)
     } else if (congrats) {
         text("YOU WIN :)",40,100)
@@ -149,7 +164,6 @@ object WhackADeadline extends PApplet  {
     else if (key == 'h' | key == 'H') help = !help
     this.lose()
     this.win()
-    //redraw()
   }
   
   private var pairs = {
