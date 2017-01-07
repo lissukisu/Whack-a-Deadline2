@@ -7,7 +7,7 @@ object WhackADeadline extends PApplet  {
   val boxSize: Int = 140
   val boxAmount: Int = 3
   val gameSize: Int = boxAmount * boxSize
-  private var time: Option[Deadline] = None //Some(1.seconds.fromNow) // älkää välittäkö tästä
+  private var time: Option[Deadline] = None
   var timeLimit: Int = 3
   
   val random = new Random
@@ -15,11 +15,11 @@ object WhackADeadline extends PApplet  {
 
   // kuvien lataus ja koon muokkaus
   var back = loadImage("paper.jpg")
-  back.resize(gameSize,gameSize)
+  back.resize(gameSize,gameSize + boxSize)
   var deadline = loadImage("icon.png")
   deadline.resize(boxSize,boxSize)
   var matti = loadImage("matti.png")
-  matti.resize(70,70)
+  matti.resize(170,170)
   
 
   private var isGameOn: Boolean = false
@@ -45,7 +45,7 @@ object WhackADeadline extends PApplet  {
   }
   
   def win() = {
-    if (deadlineHits >= 4) {
+    if (deadlineHits >= 10) {
       timeLimit -= 1
       missed = 0
       deadlineHits = 0
@@ -59,7 +59,7 @@ object WhackADeadline extends PApplet  {
   }
  
   override def setup() : Unit = { 
-    size(gameSize, gameSize + 90) 
+    size(gameSize, gameSize + boxSize) 
   }
  
 
@@ -69,9 +69,7 @@ object WhackADeadline extends PApplet  {
   }
   
   
-  var onJoDeadline = {
-    false
-  }
+  var onJoDeadline = false
   
   def newDeadline() = {
      val x = random.nextInt(boxAmount)
@@ -84,14 +82,18 @@ object WhackADeadline extends PApplet  {
 
   
   override def draw() : Unit = {
-    image(matti,10,430)
+    val myFont = createFont("GillSans-UltraBold", 28)
+    textFont(myFont)
+    fill(0)
+    image(back,0,0)
     if (isGameOn) { // pelinäkymä
-      image(back,0,0)
       if (!onJoDeadline) newDeadline()
       if (showDeadline) {
         for (i <- grid.indices; j <- grid.indices) {
          if (grid(i)(j)) {
           image(deadline, i*boxSize, j*boxSize)
+          text("Missed: " + missed, 20,460)
+          text("Hits: " + deadlineHits + "/15", 210,460)
          }
         }
       } else if (!showDeadline) {
@@ -101,23 +103,20 @@ object WhackADeadline extends PApplet  {
         println(missed)
         lose()
       }
-    } else if (begin) { // aloitusnäkymä
-      image(back,0,0)
-      val myFont = createFont("GillSans-UltraBold", 32)
-      textFont(myFont)
-      fill(0)
-      text("Welcome to play\nWhack-a-Deadline!",40,100)
     } else if (help) {
-      ???
-    } else if (gameOver) { // tähän pitäis tehdä häviön/voiton/tasojen välissä ilmestyvät näkymät
-        image(back,0,0)
+      text("HELP",40,100)
+    } else if (begin) { // aloitusnäkymä
+       text("Welcome to play\nWhack-a-Deadline!",40,100)
+    } else if (gameOver) {
         text("YOU LOSE :(",40,100)
+        text("Missed: 3", 20,460)
+        image(matti,120,200)
     } else if (nextLevel) {
-        image(back,0,0)
         text("You passed this level!\nIn the next level\nyou have " + timeLimit + " seconds for each deadline.",40,100)
+        text("Hits: 15/15", 210,460)
     } else if (congrats) {
-        image(back,0,0)
         text("YOU WIN :)",40,100)
+        text("Hits: 15/15", 210,460)
     }
   }
 
@@ -150,6 +149,7 @@ object WhackADeadline extends PApplet  {
     else if (key == 'h' | key == 'H') help = !help
     this.lose()
     this.win()
+    //redraw()
   }
   
   private var pairs = {
