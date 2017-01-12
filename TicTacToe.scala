@@ -1,4 +1,4 @@
-package peli
+package deadline_game
 import processing.core._
 import scala.concurrent.duration._
 import scala.util._
@@ -8,75 +8,81 @@ object deadline extends PApplet {
   val boxSize: Int = 140
   val boxAmount: Int = 3
   val gameSize: Int = boxAmount * boxSize
-  private var time: Option[Deadline] = None
-  var timeLimit: Int = 3
+  var grid = Array.fill(boxAmount, boxAmount)(false)
   
-  val random = new Random
+  
+  var time: Option[Deadline] = None
+  var timeLimit: Int = 3
+  var deadlineHits = 0
+  var missed = 0
+  
   
   val minim = new Minim (this)
-  val player = minim.loadFile("ticking.wav")
-  val sound = minim.loadFile("bell.wav")
+  val ticking = minim.loadFile("ticking.wav")
+  val bell = minim.loadFile("bell.wav")
   val buzz = minim.loadFile("buzz.wav")
   val cheer = minim.loadFile("cheer.mp3")
   val laugh = minim.loadFile("laugh.wav")
   
-  private def muteAll() {
-    player.mute()
-    sound.mute()
+  var soundOn = true
+  
+  def muteAll() {
+    ticking.mute()
+    bell.mute()
     buzz.mute()
     cheer.mute()
     laugh.mute()
     soundOn = false
   }
   
-  private def unmuteAll() {
-    player.unmute()
-    sound.unmute()
+  def unmuteAll() {
+    ticking.unmute()
+    bell.unmute()
     buzz.unmute()
     cheer.unmute()
     laugh.unmute()
     soundOn = true
   }
   
-  
-
-  // kuvien lataus ja koon muokkaus
-  var back = loadImage("paper.jpg")
-  back.resize(gameSize,gameSize + boxSize)
-  var deadline = loadImage("icon.png")
-  deadline.resize(boxSize,boxSize)
-  var matti = loadImage("matti.png")
-  matti.resize(170,170)
-  var keyboard = loadImage("keyboard.png")
-  keyboard.resize(160,160)
-
-  
-
-  private var isGameOn: Boolean = false
-  private var begin: Boolean = true
-  private var help: Boolean = false
-  private var gameOver: Boolean = false
-  private var nextLevel: Boolean = false
-  private var congrats: Boolean = false
-  
-  private var soundOn = true
-  private def soundText = {
-    if (soundOn) "On"
-    else "Off"
-  }
-  
-  //apumetodi joka ei kai toimi XD
-  private def music(audio: AudioPlayer) = {
+  def soundEffect(audio: AudioPlayer) = {
     if (soundOn) {
       audio.play()
       audio.rewind()
     }
   }
   
-  private var grid = Array.fill(boxAmount, boxAmount)(false)
+  def soundText = {
+    if (soundOn) "On"
+    else "Off"
+  }
   
-  private var deadlineHits = 0 // tein nää jo valmiiks, ei tee vielä mitään
-  private var missed = 0
+  
+  
+
+  // kuvien lataus ja koon muokkaus
+  val back = loadImage("paper.jpg")
+      back.resize(gameSize,gameSize + boxSize)
+  val deadline = loadImage("icon.png")
+      deadline.resize(boxSize,boxSize)
+  val matti = loadImage("matti.png")
+      matti.resize(170,170)
+  val keyboard = loadImage("keyboard.png")
+      keyboard.resize(160,160)
+
+  
+  var begin: Boolean = true
+  var isGameOn: Boolean = false
+  var help: Boolean = false
+  var gameOver: Boolean = false
+  var nextLevel: Boolean = false
+  var congrats: Boolean = false
+  
+  override def setup() : Unit = { 
+    size(gameSize, gameSize + boxSize) 
+    ticking.loop()
+  }
+  
+  var emptyGame = true
   
   def lose() = {
     if (missed >= 3) {
@@ -84,48 +90,41 @@ object deadline extends PApplet {
       gameOver = true
       deadlineHits = 0
       missed = 0
-      time = None
       timeLimit = 3
-      onJoDeadline = false
-      music(laugh)
+      soundEffect(laugh)
+      emptyGame = true
       grid = Array.fill(boxAmount, boxAmount)(false)
     }
   }
   
+  
   def win() = {
     if (deadlineHits >= 15) {
+      isGameOn = false
       timeLimit -= 1
       missed = 0
       deadlineHits = 0
-      isGameOn = false
       if (timeLimit > 0) nextLevel = true
       else {
-        music(cheer)
+        soundEffect(cheer)
         timeLimit = 3
         congrats = true
       }
     }
   }
  
-  override def setup() : Unit = { 
-    size(gameSize, gameSize + boxSize) 
-    player.loop()
-  }
- 
 
-  
   def timeLeft = {
     !(this.time == None || this.time.get.timeLeft <= 0.seconds)
   }
   
   
-  var onJoDeadline = false
-  
+  val random = new Random
   def newDeadline() = {
      val x = random.nextInt(boxAmount)
      val y = random.nextInt(boxAmount)
      grid(x)(y) = true
-     onJoDeadline = true
+     emptyGame = false
      time = Some(timeLimit.seconds.fromNow)
   }
   
@@ -140,7 +139,7 @@ object deadline extends PApplet {
       text("Missed: " + missed, 20,460)
       text("Hits: " + deadlineHits + "/15", 210,460)
       text ("Sound: " + this.soundText, 210, 510)
-      if (!onJoDeadline) newDeadline()
+      if (emptyGame) newDeadline()
       if (timeLeft) {
         for (i <- grid.indices; j <- grid.indices) {
          if (grid(i)(j)) {
@@ -149,17 +148,17 @@ object deadline extends PApplet {
         }
       } else {
         grid = Array.fill(boxAmount, boxAmount)(false)
-        onJoDeadline = false
+        emptyGame = true
         missed += 1
-        this.music(buzz)
+        soundEffect(buzz)
         println(missed)
         lose()
       }
     } else if (help) {
-      text("HELP",40,80)
       val newFont = createFont("GillSans-UltraBold", 16)
       textFont(newFont)
       fill(0)
+      text("HELP",40,80)
       text("There are 3 levels in the game:\n\nIn each level, you have less and less\n time to hit the deadlines before\n they disappear.\n\nYou can only miss two deadlines\nin each level.\n\nTo hit the\ndeadlines, use\nthese keys:\n\nTo mute or\n unmute press M.\n\nPress H to go back to the menu.",40,120)
       image(keyboard,220,300)
     } else if (begin) { // aloitusnäkymä
@@ -205,13 +204,12 @@ object deadline extends PApplet {
         val y = pairs(key.toLower)._2
         if (grid(x)(y)) {
           grid(x)(y) = false
-          onJoDeadline = false
+          emptyGame = true
           deadlineHits += 1
-          music(sound)
+          soundEffect(bell)
         } else {
           missed += 1
-          println(missed)
-          music(buzz)
+          soundEffect(buzz)
         }
       }
     }
@@ -220,7 +218,7 @@ object deadline extends PApplet {
     this.win()
   }
   
-  private var pairs = {
+   var pairs = {
     Map('q' -> (0,0),
         'w' -> (1,0),
         'e' -> (2,0),
