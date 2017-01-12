@@ -1,8 +1,9 @@
-package kierros1
+package peli
 import processing.core._
 import scala.concurrent.duration._
 import scala.util._
-object WhackADeadline extends PApplet  {
+import ddf.minim._
+object deadline extends PApplet {
  
   val boxSize: Int = 140
   val boxAmount: Int = 3
@@ -11,6 +12,32 @@ object WhackADeadline extends PApplet  {
   var timeLimit: Int = 3
   
   val random = new Random
+  
+  val minim = new Minim (this)
+  val player = minim.loadFile("ticking.wav")
+  val sound = minim.loadFile("bell.wav")
+  val buzz = minim.loadFile("buzz.wav")
+  val cheer = minim.loadFile("cheer.mp3")
+  val laugh = minim.loadFile("laugh.wav")
+  
+  private def muteAll() {
+    player.mute()
+    sound.mute()
+    buzz.mute()
+    cheer.mute()
+    laugh.mute()
+    soundOn = false
+  }
+  
+  private def unmuteAll() {
+    player.unmute()
+    sound.unmute()
+    buzz.unmute()
+    cheer.unmute()
+    laugh.unmute()
+    soundOn = true
+  }
+  
   
 
   // kuvien lataus ja koon muokkaus
@@ -32,6 +59,20 @@ object WhackADeadline extends PApplet  {
   private var nextLevel: Boolean = false
   private var congrats: Boolean = false
   
+  private var soundOn = true
+  private def soundText = {
+    if (soundOn) "On"
+    else "Off"
+  }
+  
+  //apumetodi joka ei kai toimi XD
+  private def music(audio: AudioPlayer) = {
+    if (soundOn) {
+      audio.play()
+      audio.rewind()
+    }
+  }
+  
   private var grid = Array.fill(boxAmount, boxAmount)(false)
   
   private var deadlineHits = 0 // tein nää jo valmiiks, ei tee vielä mitään
@@ -39,11 +80,15 @@ object WhackADeadline extends PApplet  {
   
   def lose() = {
     if (missed >= 3) {
+      isGameOn = false
+      gameOver = true
       deadlineHits = 0
       missed = 0
+      time = None
       timeLimit = 3
-      isGameOn = false
-      gameOver = true 
+      onJoDeadline = false
+      music(laugh)
+      grid = Array.fill(boxAmount, boxAmount)(false)
     }
   }
   
@@ -55,6 +100,7 @@ object WhackADeadline extends PApplet  {
       isGameOn = false
       if (timeLimit > 0) nextLevel = true
       else {
+        music(cheer)
         timeLimit = 3
         congrats = true
       }
@@ -63,11 +109,12 @@ object WhackADeadline extends PApplet  {
  
   override def setup() : Unit = { 
     size(gameSize, gameSize + boxSize) 
+    player.loop()
   }
  
 
   
-  def showDeadline = {
+  def timeLeft = {
     !(this.time == None || this.time.get.timeLeft <= 0.seconds)
   }
   
@@ -90,30 +137,31 @@ object WhackADeadline extends PApplet  {
     fill(0)
     image(back,0,0)
     if (isGameOn) { // pelinäkymä
+      text("Missed: " + missed, 20,460)
+      text("Hits: " + deadlineHits + "/15", 210,460)
+      text ("Sound: " + this.soundText, 210, 510)
       if (!onJoDeadline) newDeadline()
-      if (showDeadline) {
-        text("Missed: " + missed, 20,460)
-        text("Hits: " + deadlineHits + "/15", 210,460)
+      if (timeLeft) {
         for (i <- grid.indices; j <- grid.indices) {
          if (grid(i)(j)) {
           image(deadline, i*boxSize, j*boxSize)
          }
         }
-      } else if (!showDeadline) {
+      } else {
         grid = Array.fill(boxAmount, boxAmount)(false)
         onJoDeadline = false
         missed += 1
+        this.music(buzz)
         println(missed)
         lose()
       }
     } else if (help) {
-      text("HELP",40,100)
+      text("HELP",40,80)
       val newFont = createFont("GillSans-UltraBold", 16)
       textFont(newFont)
       fill(0)
-      text("There are 3 levels in the game:\n\nIn each level, you have less and less\n time to hit the deadlines before\n they disappear.\n\nYou can only miss three deadlines\nin each level.\n\nTo hit the\ndeadlines, use\nthese keys:\n\n\n\nPress H to go back to the menu.",40,150)
-      image(keyboard,220,330)
-
+      text("There are 3 levels in the game:\n\nIn each level, you have less and less\n time to hit the deadlines before\n they disappear.\n\nYou can only miss two deadlines\nin each level.\n\nTo hit the\ndeadlines, use\nthese keys:\n\nTo mute or\n unmute press M.\n\nPress H to go back to the menu.",40,120)
+      image(keyboard,220,300)
     } else if (begin) { // aloitusnäkymä
        text("Welcome to play\nWhack-a-Deadline!",40,100)
        text("Press SPACE to start\n  a new game\nPress H for help",40, 400)
@@ -132,19 +180,23 @@ object WhackADeadline extends PApplet  {
     } else if (congrats) {
         text("YOU WIN :)",40,100)
         text("Hits: 15/15", 210,460)
-    }
+      }
   }
 
 
 
   // Poistaa deadlinet näkyvistä oikeilla näppäimillä
   override def keyPressed() {
-    if (key == ' ') {
+    if (key == 'm') {
+      if (soundOn) this.muteAll()
+      else this.unmuteAll()
+    }
+    else if (key == ' ') {
       begin = false
       congrats = false
       nextLevel = false
       gameOver = false
-      help = false
+      help = false 
       isGameOn = true
     }
     else if (isGameOn) {
@@ -155,14 +207,15 @@ object WhackADeadline extends PApplet  {
           grid(x)(y) = false
           onJoDeadline = false
           deadlineHits += 1
-          println(deadlineHits)
+          music(sound)
         } else {
           missed += 1
           println(missed)
+          music(buzz)
         }
       }
     }
-    else if (key == 'h' | key == 'H') help = !help
+    else if (key == 'h') help = !help
     this.lose()
     this.win()
   }
